@@ -102,7 +102,6 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
   grid = update_grid(grid, actions, initial_positions)
 
   # 盤面のビジュアライズに壁の情報を含める関数
-  # 盤面のビジュアライズに壁の情報を含める関数
   def visualize_grid_with_walls(grid, vertical_walls, horizontal_walls):
       fig, ax = plt.subplots(figsize=(N, N))  # 盤面のサイズに応じて調整
       ax.matshow(grid, cmap='viridis', alpha=0.8)  # matshowを使用して盤面を表示
