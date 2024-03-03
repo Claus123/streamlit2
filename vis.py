@@ -56,6 +56,23 @@ def calculate_score(grid, vertical_walls, horizontal_walls):
                 score += (grid.iat[i, j] - grid.iat[i+1, j]) ** 2
     return score
 
+def apply_action(grid, action, positions):
+    pi, pj, qi, qj = positions
+    s, d, e = action.split()
+    s = int(s)
+
+    # Apply the swap if needed
+    if s == 1:
+        grid.iat[pi, pj], grid.iat[qi, qj] = grid.iat[qi, qj], grid.iat[pi, pj]
+    
+    # Move Takahashi
+    pi, pj = move_player(pi, pj, d)
+    
+    # Move Aoki
+    qi, qj = move_player(qi, qj, e)
+
+    return grid, (pi, pj, qi, qj)
+
 # 入力が適切に行われている場合のみ処理を進める
 if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_input):
 
@@ -77,6 +94,8 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
   horizontal_walls = parse_walls(horizontal_walls_input, vertical=False)
   grid_numbers = [[int(num) for num in row.split()] for row in grid_numbers_input.split("\n") if row]
 
+
+
   # ユーザー出力をパースする関数
   def parse_user_output(user_output):
       lines = user_output.strip().split("\n")
@@ -87,6 +106,11 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
 
   initial_positions, actions = parse_user_output(user_output)  # この行を修正/確認
 
+  # New code to create a slider and visualize step-by-step
+  max_steps = len(actions)  # Total number of steps based on the actions
+  step = st.slider("Step", 0, max_steps, 0)  # Slider to select the step
+
+
 
   # 盤面をDataFrameで作成する関数
   def create_grid(N, grid_numbers):
@@ -94,6 +118,17 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       return grid
 
   grid = create_grid(N, grid_numbers)
+
+  def move_player(i, j, action):
+    if action == 'U':
+        return max(0, i-1), j
+    elif action == 'D':
+        return min(N-1, i+1), j
+    elif action == 'L':
+        return i, max(0, j-1)
+    elif action == 'R':
+        return i, min(N-1, j+1)
+    return i, j
 
 
   # 盤面を更新する関数
@@ -162,6 +197,14 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       # 得点の計算
       score = max(1, round(10**6 * math.log2(D / D_prime))) if D_prime > 0 else 0
 
+      for i in range(step):
+        s, d, e = actions[i].split()
+        pi, pj = move_player(pi, pj, d)  # 高橋君の移動を適用
+        qi, qj = move_player(qi, qj, e)  # 青木君の移動を適用
+        if s == '1':
+            # 数字の交換
+            grid.iat[pi, pj], grid.iat[qi, qj] = grid.iat[qi, qj], grid.iat[pi, pj]
+
       # 青木君と高橋君の現在位置をマークする
       ax.plot(pj, pi, "o", color="red", markersize=10)  # 高橋君の位置を赤い丸で表示
       ax.plot(qj, qi, "o", color="blue", markersize=10)  # 青木君の位置を青い丸で表示
@@ -170,7 +213,9 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       st.pyplot(fig)
 
       # scoreも描画
-      st.write(f"Score: {score}")
+      # st.write(f"Score: {score}")
+    
+
 
 
 # 盤面のビジュアライズに壁の情報と青木君と高橋君の位置を含める関数を呼び出し
