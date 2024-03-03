@@ -56,6 +56,17 @@ def calculate_score(grid, vertical_walls, horizontal_walls):
                 score += (grid.iat[i, j] - grid.iat[i+1, j]) ** 2
     return score
 
+# スコアの計算と表示を行う関数
+def display_score(grid, vertical_walls, horizontal_walls, initial_score):
+    # 現在の盤面のスコア D を計算
+    current_score = calculate_score(grid, vertical_walls, horizontal_walls)
+    # 得点を計算
+    score = max(1, round(10**6 * math.log2(current_score / initial_score)))
+    # 初期状態における二乗和の値と最終状態における二乗和の値の差を表示
+    st.write(f"初期状態と最終状態のスコアの差: {current_score - initial_score}")
+    # 得点を表示
+    st.write(f"得点: {score}")
+
 def apply_action(grid, action, positions):
     pi, pj, qi, qj = positions
     s, d, e = action.split()
@@ -120,6 +131,7 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       return grid
 
   grid = create_grid(N, grid_numbers)
+  initial_score = calculate_score(grid, vertical_walls, horizontal_walls)
 
   def move_player(i, j, action):
     if action == 'U':
@@ -222,6 +234,7 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
 
 # 盤面のビジュアライズに壁の情報と青木君と高橋君の位置を含める関数を呼び出し
   visualize_grid_with_positions(grid, vertical_walls, horizontal_walls, pi, pj, qi, qj)
+  display_score(grid, vertical_walls, horizontal_walls, initial_score)
 
 else:
     st.write("Please enter all input fields.")
