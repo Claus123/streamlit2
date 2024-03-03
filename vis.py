@@ -17,21 +17,21 @@ horizontal_walls_input = st.text_area("横の壁の情報を入力", height=150)
 grid_numbers_input = st.text_area("マスの値の情報を入力", height=150)
 
 # 高橋君と青木君の初期位置を入力する
-initial_positions_input = st.text_input("高橋君と青木君の初期位置を入力", value="0 0 0 1")
+# initial_positions_input = st.text_input("高橋君と青木君の初期位置を入力", value="0 0 0 1")
 
 # 文字列入力から青木君と高橋君の初期位置を解析する関数
 def parse_positions(input_str):
     return list(map(int, input_str.split()))
 
 # 青木君と高橋君の現在位置を取得
-pi, pj, qi, qj = parse_positions(initial_positions_input)
+# pi, pj, qi, qj = parse_positions(initial_positions_input)
 
 # 入力が適切に行われたかを確認する関数
 def validate_input(*args):
     return all(arg != '' for arg in args) and all(arg is not None for arg in args)
 
 # ユーザーが提供する出力情報（初期配置および操作）を入力する
-user_output = st.text_area("Enter the user output (initial positions and actions):", height=100)
+user_output = st.text_area("初期位置および操作を入力", height=100)
 
 # 文字列入力を数値のリストに変換する関数
 def parse_input(input_str, is_grid=False):
@@ -105,6 +105,8 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       return initial_positions, actions
 
   initial_positions, actions = parse_user_output(user_output)  # この行を修正/確認
+
+  pi, pj, qi, qj = initial_positions  # 高橋君と青木君の初期位置を取得
 
   # New code to create a slider and visualize step-by-step
   max_steps = len(actions)  # Total number of steps based on the actions
