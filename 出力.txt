@@ -1,0 +1,68 @@
+Streamlitで作成したアプリをHerokuにデプロイするプロセスは、いくつかのステップで構成されます。ここでは、それぞれのステップを詳細に解説します。
+
+### 事前準備
+
+1. **GitHubアカウントの作成:** アプリケーションのコードをホスティングするために必要です。
+2. **Herokuアカウントの作成:** アプリケーションをデプロイする場所です。
+3. **Gitのインストール:** コードのバージョン管理およびGitHubへのプッシュに必要です。
+4. **Heroku CLIのインストール:** Herokuの操作をコマンドラインから実行するために必要です。
+
+### ステップ1: アプリケーションの準備
+
+まず、Streamlitで作成したアプリケーションのディレクトリにおいて、以下のファイルを作成または確認する必要があります。
+
+- **requirements.txt:** このファイルには、アプリケーションの動作に必要な全てのPythonライブラリを列挙します。`pip freeze > requirements.txt` コマンドで生成できます。
+- **Procfile:** このファイルは、Herokuにアプリケーションの起動方法を指示します。内容は `web: sh setup.sh && streamlit run your_app.py`のようになります。`your_app.py`はアプリケーションのエントリポイントです。
+- **setup.sh:** このシェルスクリプトはStreamlitの設定を行います。次の内容で作成できます。
+    ```sh
+    mkdir -p ~/.streamlit/
+    echo "\
+    [server]\n\
+    headless = true\n\
+    enableCORS=false\n\
+    port = $PORT\n\
+    " > ~/.streamlit/config.toml
+    ```
+- **runtime.txt (オプション):** このファイルで、特定のPythonのバージョンを指定できます。例えば、`python-3.8.10`。
+
+### ステップ2: GitHubにリポジトリを作成
+
+1. GitHubで新しいリポジトリを作成します。
+2. ローカルでアプリケーションのディレクトリに移動し、次のコマンドを実行して、リポジトリを初期化し、GitHubにプッシュします。
+    ```bash
+    git init
+    git add .
+    git commit -m "First commit"
+    git branch -M main
+    git remote add origin <リポジトリのURL>
+    git push -u origin main
+    ```
+
+### ステップ3: Herokuにアプリケーションをデプロイ
+
+1. コマンドラインでHerokuにログインします。
+    ```bash
+    heroku login
+    ```
+2. 新しいHerokuアプリケーションを作成します。
+    ```bash
+    heroku create your-app-name
+    ```
+    `your-app-name`はHeroku上でのアプリケーション名です。
+3. GitHubリポジトリをHerokuアプリに連携します。
+    ```bash
+    heroku git:remote -a your-app-name
+    ```
+4. アプリケーションをデプロイします。
+    ```bash
+    git push heroku main
+    ```
+
+### ステップ4: アプリケーションの起動
+
+デプロイが完了したら、Herokuのダッシュボードからアプリケーションを開くか、次のコマンドを実行して起動します。
+```bash
+heroku open
+```
+
+これらの指示に従えば、Streamlitで作成したアプリケーションをHerokuにデプロイできます。サーバーの稼働状況やログは、HerokuのダッシュボードまたはCLIを通じて管理できます。
