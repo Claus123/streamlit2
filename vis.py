@@ -2,18 +2,29 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 # 盤面のサイズNを入力として受け取る
 N = st.number_input('Enter the size of the grid (N):', min_value=10, max_value=100, value=10)
 
 # 縦の壁の情報をテキストエリアで受け取る
-vertical_walls_input = st.text_area("Enter the vertical walls (v) as N rows of 0s and 1s, each N-1 characters long:", height=150)
+vertical_walls_input = st.text_area("縦の壁の情報を入力", height=150)
 
 # 横の壁の情報をテキストエリアで受け取る
-horizontal_walls_input = st.text_area("Enter the horizontal walls (h) as N-1 rows of 0s and 1s, each N characters long:", height=150)
+horizontal_walls_input = st.text_area("横の壁の情報を入力", height=150)
 
 # マスの値の情報をテキストエリアで受け取る
-grid_numbers_input = st.text_area("Enter the grid numbers (a) as N rows of numbers, each separated by space:", height=150)
+grid_numbers_input = st.text_area("マスの値の情報を入力", height=150)
+
+# 高橋君と青木君の初期位置を入力する
+initial_positions_input = st.text_input("高橋君と青木君の初期位置を入力", value="0 0 0 1")
+
+# 文字列入力から青木君と高橋君の初期位置を解析する関数
+def parse_positions(input_str):
+    return list(map(int, input_str.split()))
+
+# 青木君と高橋君の現在位置を取得
+pi, pj, qi, qj = parse_positions(initial_positions_input)
 
 # 入力が適切に行われたかを確認する関数
 def validate_input(*args):
@@ -29,6 +40,21 @@ def parse_input(input_str, is_grid=False):
         return [[int(num) for num in row.split()] for row in rows if row]
     else:
         return [[int(num) for num in row] for row in rows if row]
+    
+# 隣接するマスのペアの二乗和を計算する関数
+def calculate_score(grid, vertical_walls, horizontal_walls):
+    score = 0
+    # 垂直方向の隣接マスのペアを調べる
+    for i in range(N):
+        for j in range(N-1):
+            if vertical_walls[i][j] == 0:  # 壁がない場合
+                score += (grid.iat[i, j] - grid.iat[i, j+1]) ** 2
+    # 水平方向の隣接マスのペアを調べる
+    for i in range(N-1):
+        for j in range(N):
+            if horizontal_walls[i][j] == 0:  # 壁がない場合
+                score += (grid.iat[i, j] - grid.iat[i+1, j]) ** 2
+    return score
 
 # 入力が適切に行われている場合のみ処理を進める
 if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_input):
@@ -102,7 +128,7 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
   grid = update_grid(grid, actions, initial_positions)
 
   # 盤面のビジュアライズに壁の情報を含める関数
-  def visualize_grid_with_walls(grid, vertical_walls, horizontal_walls):
+  def visualize_grid_with_positions(grid, vertical_walls, horizontal_walls, pi, pj, qi, qj):
       fig, ax = plt.subplots(figsize=(N, N))  # 盤面のサイズに応じて調整
       ax.matshow(grid, cmap='viridis', alpha=0.8)  # matshowを使用して盤面を表示
 
@@ -126,12 +152,29 @@ if validate_input(vertical_walls_input, horizontal_walls_input, grid_numbers_inp
       ax.xaxis.set_major_formatter(plt.NullFormatter())
       ax.yaxis.set_major_formatter(plt.NullFormatter())
 
+      # 現在のスコアを計算
+      current_score = calculate_score(grid, vertical_walls, horizontal_walls)
+      # D' (初期状態の二乗和) は最初にグリッドが生成されたときのスコアと仮定
+      D_prime = current_score  # 初期状態のスコアとして現在のスコアを使用
+      # D (最終状態の二乗和) は操作後のグリッドに対して計算されるスコアと仮定
+      # ここでは操作を行っていないので、D_primeと同じになる
+      D = current_score  # 最終状態のスコアとして現在のスコアを使用
+      # 得点の計算
+      score = max(1, round(10**6 * math.log2(D / D_prime))) if D_prime > 0 else 0
+
+      # 青木君と高橋君の現在位置をマークする
+      ax.plot(pj, pi, "o", color="red", markersize=10)  # 高橋君の位置を赤い丸で表示
+      ax.plot(qj, qi, "o", color="blue", markersize=10)  # 青木君の位置を青い丸で表示
+
       # Streamlit上に描画
       st.pyplot(fig)
 
+      # scoreも描画
+      st.write(f"Score: {score}")
 
-  # 盤面のビジュアライズに壁の情報を含める関数を呼び出し
-  visualize_grid_with_walls(grid, vertical_walls, horizontal_walls)
+
+# 盤面のビジュアライズに壁の情報と青木君と高橋君の位置を含める関数を呼び出し
+  visualize_grid_with_positions(grid, vertical_walls, horizontal_walls, pi, pj, qi, qj)
 
 else:
     st.write("Please enter all input fields.")
